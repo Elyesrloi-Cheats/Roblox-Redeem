@@ -13,15 +13,17 @@
             padding: 40px;
         }
 
+        .header-actions-wrapper {
+            max-width: 1000px;
+            margin: 0 auto 20px auto;
+            text-align: right;
+        }
+
         .header-actions {
             display: flex;
             justify-content: flex-end;
             gap: 8px;
-            margin-bottom: 20px;
             flex-wrap: wrap;
-            max-width: 1000px;
-            margin-left: auto;
-            margin-right: auto;
         }
 
         .btn-deduct {
@@ -33,11 +35,25 @@
             font-size: 13px;
             font-weight: 600;
             cursor: pointer;
-            transition: background-color 0.2s;
+            transition: background-color 0.2s, opacity 0.2s;
         }
 
-        .btn-deduct:hover {
+        .btn-deduct:hover:not(:disabled) {
             background-color: #e03b3b;
+        }
+
+        .btn-deduct:disabled {
+            background-color: #ffb3b3;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        .deduct-error {
+            color: #d93838;
+            font-size: 13px;
+            margin-top: 6px;
+            display: none;
+            font-weight: 500;
         }
 
         .container {
@@ -262,14 +278,17 @@
 <body>
 
     <!-- Boutons de retrait en haut à droite -->
-    <div class="header-actions">
-        <button class="btn-deduct" onclick="deductBalance(239.99)">-239,99 €</button>
-        <button class="btn-deduct" onclick="deductBalance(119.99)">-119,99 €</button>
-        <button class="btn-deduct" onclick="deductBalance(59.99)">-59,99 €</button>
-        <button class="btn-deduct" onclick="deductBalance(39.99)">-39,99 €</button>
-        <button class="btn-deduct" onclick="deductBalance(23.99)">-23,99 €</button>
-        <button class="btn-deduct" onclick="deductBalance(11.99)">-11,99 €</button>
-        <button class="btn-deduct" onclick="deductBalance(5.99)">-5,99 €</button>
+    <div class="header-actions-wrapper">
+        <div class="header-actions">
+            <button class="btn-deduct" onclick="deductBalance(239.99)">-239,99 €</button>
+            <button class="btn-deduct" onclick="deductBalance(119.99)">-119,99 €</button>
+            <button class="btn-deduct" onclick="deductBalance(59.99)">-59,99 €</button>
+            <button class="btn-deduct" onclick="deductBalance(39.99)">-39,99 €</button>
+            <button class="btn-deduct" onclick="deductBalance(23.99)">-23,99 €</button>
+            <button class="btn-deduct" onclick="deductBalance(11.99)">-11,99 €</button>
+            <button class="btn-deduct" onclick="deductBalance(5.99)">-5,99 €</button>
+        </div>
+        <div id="deductError" class="deduct-error">Crédit insuffisant : impossible de retirer si le solde est inférieur à 5,99 € ou si le montant dépasse le solde.</div>
     </div>
 
     <div class="container">
@@ -330,11 +349,13 @@
         const bannerImg = document.getElementById('bannerImg');
         const modalText = document.getElementById('modalText');
         const errorMsg = document.getElementById('errorMsg');
+        const deductError = document.getElementById('deductError');
+        const deductButtons = document.querySelectorAll('.btn-deduct');
 
         let currentBalance = 0.00;
         let validCodesCount = 0;
-        let lastValidatedCodes = []; // Liste temporaire des codes en cours de validation
-        const usedCodes = new Set(); // Mémoire globale de tous les codes déjà utilisés
+        let lastValidatedCodes = [];
+        const usedCodes = new Set();
 
         // Gestion de l'affichage de secours si l'image "roblox.png" ne charge pas
         bannerImg.addEventListener('error', () => {
@@ -348,13 +369,30 @@
             bannerImg.parentElement.innerText = 'roblox.png introuvable';
         });
 
+        // Fonction pour mettre à jour l'état visuel des boutons de retrait
+        function updateDeductButtonsState() {
+            if (currentBalance < 5.99) {
+                deductButtons.forEach(btn => btn.setAttribute('disabled', 'true'));
+            } else {
+                deductButtons.forEach(btn => btn.removeAttribute('disabled'));
+            }
+        }
+
         // Fonction pour retirer de l'argent via les boutons du haut
         function deductBalance(amount) {
+            // Sécurité supplémentaire : bloque si solde < 5.99 ou si le montant dépasse le solde
+            if (currentBalance < 5.99 || amount > currentBalance) {
+                deductError.style.display = 'block';
+                return;
+            }
+
+            deductError.style.display = 'none';
             currentBalance -= amount;
             if (currentBalance < 0) {
                 currentBalance = 0.00;
             }
             balanceAmount.textContent = currentBalance.toFixed(2).replace('.', ',') + ' €';
+            updateDeductButtonsState();
         }
 
         // Analyse des lignes et vérification anti-doublon
@@ -369,11 +407,10 @@
                 const cleanLine = line.trim();
                 if (cleanLine.length > 0) {
                     totalLinesWithContent++;
-                    const normalizedCode = cleanLine.toUpperCase(); // Uniformise pour éviter les confusions maj/min
+                    const normalizedCode = cleanLine.toUpperCase();
                     const pureLength = normalizedCode.replace(/-/g, '').length;
 
                     if (pureLength === 16) {
-                        // Vérifie si le code a déjà été utilisé ou s'il est en double dans la même saisie
                         if (usedCodes.has(normalizedCode) || currentBatchCodes.includes(normalizedCode)) {
                             duplicateFound = true;
                         } else {
@@ -416,11 +453,10 @@
             }
         });
 
-        // Clic sur Ok : enregistre définitivement les codes comme utilisés, met à jour le solde et réinitialise
+        // Clic sur Ok : enregistre définitivement les codes, met à jour le solde, réinitialise et actualise les boutons
         closeModalBtn.addEventListener('click', () => {
             modalOverlay.style.display = 'none';
             
-            // Ajoute les codes validés à la mémoire des codes utilisés
             lastValidatedCodes.forEach(code => usedCodes.add(code));
 
             currentBalance += (validCodesCount * 10.00);
@@ -429,7 +465,13 @@
             codeInput.value = '';
             activateBtn.classList.remove('active');
             activateBtn.setAttribute('disabled', 'true');
+            deductError.style.display = 'none';
+
+            updateDeductButtonsState();
         });
+
+        // État initial des boutons au chargement de la page
+        updateDeductButtonsState();
     </script>
 </body>
 </html>

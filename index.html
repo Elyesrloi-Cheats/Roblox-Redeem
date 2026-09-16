@@ -157,10 +157,9 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
-            opacity: 0.8;
         }
 
-        /* Styles de la fenêtre modale (pop-up) */
+        /* Styles de la fenêtre modale */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -243,7 +242,6 @@
             <span class="label">Code</span>
             <div class="input-wrapper">
                 <input type="text" id="codeInput" maxlength="16" placeholder="">
-                <!-- Icône SVG appareil photo/scan -->
                 <svg class="icon-qr" viewBox="0 0 24 24">
                     <path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H8V4h12v12zm-6-2.5c1.38 0 2.5-1.12 2.5-2.5s-1.12-2.5-2.5-2.5-2.5 1.12-2.5 2.5 1.12 2.5 2.5 2.5z"/>
                 </svg>
@@ -256,7 +254,7 @@
             </p>
 
             <div class="balance">
-                Crédit disponible : 0,00 €
+                Crédit disponible : <span id="balanceAmount">0,00 €</span>
             </div>
         </div>
 
@@ -272,8 +270,7 @@
             </ul>
 
             <div class="promo-banner">
-                <!-- Remplacer l'attribut src par votre image de bannière si nécessaire -->
-                <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='200' fill='%23222'><rect width='400' height='200'/><text x='50%+' y='50%' dominant-baseline='middle' text-anchor='middle' fill='white' font-family='sans-serif' font-size='32' font-weight='bold'>ROBLOX</text></svg>" alt="Roblox Gift Cards">
+                <img src="banniere.jpg" alt="Bannière Roblox">
             </div>
         </div>
     </div>
@@ -293,7 +290,7 @@
         const modalOverlay = document.getElementById('modalOverlay');
         const closeModalBtn = document.getElementById('closeModalBtn');
 
-        // Vérification de la longueur du code (16 caractères)
+        // Gestion de l'activation du bouton selon les 16 caractères
         codeInput.addEventListener('input', (e) => {
             const value = e.target.value;
             if (value.length === 16) {
@@ -305,14 +302,14 @@
             }
         });
 
-        // Affichage de la fenêtre modale au clic sur Activer
+        // Clic sur Activer : affiche la pop-up
         activateBtn.addEventListener('click', () => {
             if (activateBtn.classList.contains('active')) {
                 modalOverlay.style.display = 'flex';
             }
         });
 
-        // Fermeture de la fenêtre modale au clic sur Ok
+        // Clic sur Ok : ferme la pop-up et réinitialise le champ
         closeModalBtn.addEventListener('click', () => {
             modalOverlay.style.display = 'none';
             codeInput.value = '';

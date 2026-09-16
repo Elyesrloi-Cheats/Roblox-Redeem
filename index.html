@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Activer les codes Roblox</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #ffffff;
+            color: #111111;
+            margin: 0;
+            padding: 40px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            gap: 60px;
+        }
+
+        .left-column {
+            flex: 1;
+        }
+
+        .right-column {
+            flex: 1;
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 24px;
+        }
+
+        p {
+            font-size: 15px;
+            line-height: 1.5;
+            color: #393b3d;
+            margin-bottom: 20px;
+        }
+
+        .label {
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .input-wrapper {
+            position: relative;
+            margin-bottom: 16px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 14px 45px 14px 14px;
+            border: 1px solid #b4b4b4;
+            border-radius: 8px;
+            font-size: 16px;
+            box-sizing: border-box;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus {
+            border-color: #0074e8;
+        }
+
+        .icon-qr {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 20px;
+            fill: #393b3d;
+            cursor: pointer;
+        }
+
+        .btn-redeem {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            background-color: #f2f2f2;
+            color: #8c8c8c;
+            cursor: not-allowed;
+            transition: background-color 0.2s, color 0.2s;
+            margin-bottom: 24px;
+        }
+
+        .btn-redeem.active {
+            background-color: #0074e8;
+            color: #ffffff;
+            cursor: pointer;
+        }
+
+        .btn-redeem.active:hover {
+            background-color: #005bc1;
+        }
+
+        .footer-text {
+            font-size: 13px;
+            color: #575b5e;
+            margin-bottom: 24px;
+        }
+
+        .balance {
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        h2 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        .links-list {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 30px 0;
+        }
+
+        .links-list li {
+            margin-bottom: 12px;
+        }
+
+        .links-list a {
+            color: #0074e8;
+            text-decoration: none;
+            font-size: 15px;
+        }
+
+        .links-list a:hover {
+            text-decoration: underline;
+        }
+
+        .promo-banner {
+            background-color: #111;
+            border-radius: 12px;
+            overflow: hidden;
+            width: 100%;
+            height: 200px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .promo-banner img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.8;
+        }
+
+        /* Styles de la fenêtre modale (pop-up) */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            position: relative;
+        }
+
+        .wallet-icon {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 20px auto;
+            border: 3px solid #0074e8;
+            border-radius: 10px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .wallet-icon::after {
+            content: '';
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background-color: #0074e8;
+            border-radius: 50%;
+            right: 10px;
+        }
+
+        .modal-text {
+            font-size: 16px;
+            font-weight: 600;
+            color: #111111;
+            margin-bottom: 24px;
+            line-height: 1.4;
+        }
+
+        .btn-ok {
+            background-color: #0074e8;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 30px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .btn-ok:hover {
+            background-color: #005bc1;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Colonne de gauche -->
+        <div class="left-column">
+            <h1>Activer les codes Roblox</h1>
+            <p>Saisis ta carte-cadeau, ton item virtuel ou ton code promo ci-dessous.</p>
+            
+            <span class="label">Code</span>
+            <div class="input-wrapper">
+                <input type="text" id="codeInput" maxlength="16" placeholder="">
+                <!-- Icône SVG appareil photo/scan -->
+                <svg class="icon-qr" viewBox="0 0 24 24">
+                    <path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H8V4h12v12zm-6-2.5c1.38 0 2.5-1.12 2.5-2.5s-1.12-2.5-2.5-2.5-2.5 1.12-2.5 2.5 1.12 2.5 2.5 2.5z"/>
+                </svg>
+            </div>
+
+            <button id="activateBtn" class="btn-redeem" disabled>Activer</button>
+
+            <p class="footer-text">
+                En activant ce code, tu déclares que toi, et ton parent ou tuteur légal si tu as moins de 18 ans, acceptez nos Conditions d'utilisation, y compris la clause d'arbitrage et les termes et conditions des cartes cadeaux et accepte notre Politique de confidentialité.
+            </p>
+
+            <div class="balance">
+                Crédit disponible : 0,00 €
+            </div>
+        </div>
+
+        <!-- Colonne de droite -->
+        <div class="right-column">
+            <h2>Informations supplémentaires</h2>
+            <ul class="links-list">
+                <li><a href="#">Comment activer des cartes-cadeaux (Vidéo)</a></li>
+                <li><a href="#">Plus d'aide sur les cartes-cadeaux</a></li>
+                <li><a href="#">Comment activer des codes d'items virtuels</a></li>
+                <li><a href="#">Comment activer des codes promotionnels</a></li>
+                <li><a href="#">En savoir plus sur la sécurité, la modération et les contrôles parentaux de Roblox</a></li>
+            </ul>
+
+            <div class="promo-banner">
+                <!-- Remplacer l'attribut src par votre image de bannière si nécessaire -->
+                <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='200' fill='%23222'><rect width='400' height='200'/><text x='50%+' y='50%' dominant-baseline='middle' text-anchor='middle' fill='white' font-family='sans-serif' font-size='32' font-weight='bold'>ROBLOX</text></svg>" alt="Roblox Gift Cards">
+            </div>
+        </div>
+    </div>
+
+    <!-- Fenêtre modale -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <div class="wallet-icon"></div>
+            <div class="modal-text">10,00€ ont été ajoutés à votre solde roblox avec succès !</div>
+            <button class="btn-ok" id="closeModalBtn">Ok</button>
+        </div>
+    </div>
+
+    <script>
+        const codeInput = document.getElementById('codeInput');
+        const activateBtn = document.getElementById('activateBtn');
+        const modalOverlay = document.getElementById('modalOverlay');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+
+        // Vérification de la longueur du code (16 caractères)
+        codeInput.addEventListener('input', (e) => {
+            const value = e.target.value;
+            if (value.length === 16) {
+                activateBtn.classList.add('active');
+                activateBtn.removeAttribute('disabled');
+            } else {
+                activateBtn.classList.remove('active');
+                activateBtn.setAttribute('disabled', 'true');
+            }
+        });
+
+        // Affichage de la fenêtre modale au clic sur Activer
+        activateBtn.addEventListener('click', () => {
+            if (activateBtn.classList.contains('active')) {
+                modalOverlay.style.display = 'flex';
+            }
+        });
+
+        // Fermeture de la fenêtre modale au clic sur Ok
+        closeModalBtn.addEventListener('click', () => {
+            modalOverlay.style.display = 'none';
+            codeInput.value = '';
+            activateBtn.classList.remove('active');
+            activateBtn.setAttribute('disabled', 'true');
+        });
+    </script>
+</body>
+</html>

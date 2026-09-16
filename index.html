@@ -270,7 +270,8 @@
             </ul>
 
             <div class="promo-banner">
-                <img src="banniere.png" alt="Bannière Roblox">
+                <!-- Fallback visuel géré en JS si l'image ne charge pas -->
+                <img id="bannerImg" src="banniere.png" alt="Bannière Roblox">
             </div>
         </div>
     </div>
@@ -289,6 +290,19 @@
         const activateBtn = document.getElementById('activateBtn');
         const modalOverlay = document.getElementById('modalOverlay');
         const closeModalBtn = document.getElementById('closeModalBtn');
+        const balanceAmount = document.getElementById('balanceAmount');
+        const bannerImg = document.getElementById('bannerImg');
+
+        let currentBalance = 0.00;
+
+        // Gestion de l'affichage de secours si l'image "banniere.png" est introuvable
+        bannerImg.addEventListener('error', () => {
+            bannerImg.style.display = 'none';
+            bannerImg.parentElement.style.color = 'white';
+            bannerImg.parentElement.style.fontSize = '24px';
+            bannerImg.parentElement.style.fontWeight = 'bold';
+            bannerImg.parentElement.innerText = 'ROBLOX (Image introuvable)';
+        });
 
         // Gestion de l'activation du bouton selon les 16 caractères
         codeInput.addEventListener('input', (e) => {
@@ -302,16 +316,22 @@
             }
         });
 
-        // Clic sur Activer : affiche la pop-up
+        // Clic sur Activer : affiche la pop-up de succès
         activateBtn.addEventListener('click', () => {
             if (activateBtn.classList.contains('active')) {
                 modalOverlay.style.display = 'flex';
             }
         });
 
-        // Clic sur Ok : ferme la pop-up et réinitialise le champ
+        // Clic sur Ok : met à jour le solde, ferme la pop-up et réinitialise le champ
         closeModalBtn.addEventListener('click', () => {
             modalOverlay.style.display = 'none';
+            
+            // Ajoute 10,00 € au crédit
+            currentBalance += 10.00;
+            balanceAmount.textContent = currentBalance.toFixed(2).replace('.', ',') + ' €';
+
+            // Réinitialisation du champ et du bouton
             codeInput.value = '';
             activateBtn.classList.remove('active');
             activateBtn.setAttribute('disabled', 'true');

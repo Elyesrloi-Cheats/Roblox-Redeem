@@ -54,30 +54,23 @@
             margin-bottom: 16px;
         }
 
-        input[type="text"] {
+        /* Transformé en textarea pour pouvoir sauter des lignes (jusqu'à 500 lignes) */
+        textarea {
             width: 100%;
-            padding: 14px 45px 14px 14px;
+            height: 120px;
+            padding: 14px;
             border: 1px solid #b4b4b4;
             border-radius: 8px;
             font-size: 16px;
             box-sizing: border-box;
             outline: none;
+            resize: vertical;
+            font-family: inherit;
             transition: border-color 0.2s;
         }
 
-        input[type="text"]:focus {
+        textarea:focus {
             border-color: #0074e8;
-        }
-
-        .icon-qr {
-            position: absolute;
-            right: 14px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 20px;
-            height: 20px;
-            fill: #393b3d;
-            cursor: pointer;
         }
 
         .btn-redeem {
@@ -241,10 +234,8 @@
             
             <span class="label">Code</span>
             <div class="input-wrapper">
-                <input type="text" id="codeInput" maxlength="16" placeholder="">
-                <svg class="icon-qr" viewBox="0 0 24 24">
-                    <path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H8V4h12v12zm-6-2.5c1.38 0 2.5-1.12 2.5-2.5s-1.12-2.5-2.5-2.5-2.5 1.12-2.5 2.5 1.12 2.5 2.5 2.5z"/>
-                </svg>
+                <!-- Utilisation d'un textarea pour permettre les sauts de ligne (jusqu'à 500 lignes) -->
+                <textarea id="codeInput" placeholder="Entrez un code par ligne..."></textarea>
             </div>
 
             <button id="activateBtn" class="btn-redeem" disabled>Activer</button>
@@ -270,7 +261,6 @@
             </ul>
 
             <div class="promo-banner">
-                <!-- Image mise à jour vers roblox.png -->
                 <img id="bannerImg" src="roblox.png" alt="Bannière Roblox">
             </div>
         </div>
@@ -280,7 +270,7 @@
     <div class="modal-overlay" id="modalOverlay">
         <div class="modal">
             <div class="wallet-icon"></div>
-            <div class="modal-text">10,00€ ont été ajoutés à votre solde roblox avec succès !</div>
+            <div class="modal-text" id="modalText">10,00€ ont été ajoutés à votre solde roblox avec succès !</div>
             <button class="btn-ok" id="closeModalBtn">Ok</button>
         </div>
     </div>
@@ -292,10 +282,12 @@
         const closeModalBtn = document.getElementById('closeModalBtn');
         const balanceAmount = document.getElementById('balanceAmount');
         const bannerImg = document.getElementById('bannerImg');
+        const modalText = document.getElementById('modalText');
 
         let currentBalance = 0.00;
+        let validCodesCount = 0;
 
-        // Gestion de l'affichage de secours si l'image "roblox.png" ne charge toujours pas
+        // Gestion de l'affichage de secours si l'image "roblox.png" ne charge pas
         bannerImg.addEventListener('error', () => {
             bannerImg.style.display = 'none';
             bannerImg.parentElement.style.color = 'white';
@@ -307,30 +299,52 @@
             bannerImg.parentElement.innerText = 'roblox.png introuvable';
         });
 
-        // Gestion de l'activation du bouton selon les 16 caractères
-        codeInput.addEventListener('input', (e) => {
-            const value = e.target.value;
-            if (value.length === 16) {
+        // Analyse des lignes écrites
+        codeInput.addEventListener('input', () => {
+            const lines = codeInput.value.split('\n');
+            let validLines = 0;
+            let totalLinesWithContent = 0;
+
+            lines.forEach(line => {
+                const cleanLine = line.trim();
+                if (cleanLine.length > 0) {
+                    totalLinesWithContent++;
+                    // Nettoie les tirets éventuels pour compter les caractères purs
+                    const pureLength = cleanLine.replace(/-/g, '').length;
+                    if (pureLength === 16) {
+                        validLines++;
+                    }
+                }
+            });
+
+            // Le bouton s'active si toutes les lignes écrites ont exactement 16 caractères (et qu'il y a au moins 1 ligne, max 500)
+            if (totalLinesWithContent > 0 && validLines === totalLinesWithContent && totalLinesWithContent <= 500) {
+                validCodesCount = totalLinesWithContent;
                 activateBtn.classList.add('active');
                 activateBtn.removeAttribute('disabled');
             } else {
+                validCodesCount = 0;
                 activateBtn.classList.remove('active');
                 activateBtn.setAttribute('disabled', 'true');
             }
         });
 
-        // Clic sur Activer : affiche la pop-up de succès
+        // Clic sur Activer : calcule le montant total (10€ par ligne)
         activateBtn.addEventListener('click', () => {
             if (activateBtn.classList.contains('active')) {
+                const totalAmount = validCodesCount * 10.00;
+                const formattedAmount = totalAmount.toFixed(2).replace('.', ',') + '€';
+                modalText.textContent = `${formattedAmount} ont été ajoutés à votre solde roblox avec succès !`;
+                
                 modalOverlay.style.display = 'flex';
             }
         });
 
-        // Clic sur Ok : met à jour le solde (ajoute 10€), ferme la pop-up et réinitialise le champ
+        // Clic sur Ok : met à jour le solde global
         closeModalBtn.addEventListener('click', () => {
             modalOverlay.style.display = 'none';
             
-            currentBalance += 10.00;
+            currentBalance += (validCodesCount * 10.00);
             balanceAmount.textContent = currentBalance.toFixed(2).replace('.', ',') + ' €';
 
             codeInput.value = '';

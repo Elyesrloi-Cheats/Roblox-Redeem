@@ -299,7 +299,7 @@
             
             <span class="label">Code</span>
             <div class="input-wrapper">
-                <textarea id="codeInput" placeholder="Entrez un code par ligne..."></textarea>
+                <textarea id="codeInput" placeholder="Entrez les codes (séparés par des virgules ou des sauts de ligne)..."></textarea>
             </div>
             <div id="errorMsg" class="error-message"></div>
 
@@ -369,11 +369,9 @@
             bannerImg.parentElement.innerText = 'roblox.png introuvable';
         });
 
-        // Fonction pour bloquer dynamiquement les boutons selon le solde exact et le seuil de 5.99€
         function updateDeductButtonsState() {
             deductButtons.forEach(btn => {
                 const amount = parseFloat(btn.getAttribute('data-amount'));
-                // Désactive si le solde est inférieur à 5.99 ou si le bouton coûte plus cher que le solde disponible
                 if (currentBalance < 5.99 || amount > currentBalance) {
                     btn.setAttribute('disabled', 'true');
                 } else {
@@ -382,7 +380,6 @@
             });
         }
 
-        // Fonction pour retirer de l'argent via les boutons du haut
         function deductBalance(amount) {
             if (currentBalance < 5.99 || amount > currentBalance) {
                 deductError.style.display = 'block';
@@ -398,26 +395,29 @@
             updateDeductButtonsState();
         }
 
-        // Analyse des lignes et vérification anti-doublon
+        // Analyse des codes (gère les sauts de ligne ET les virgules)
         codeInput.addEventListener('input', () => {
-            const lines = codeInput.value.split('\n');
-            let validLines = 0;
-            let totalLinesWithContent = 0;
+            const rawText = codeInput.value;
+            // Sépare à la fois par les retours à la ligne (\n) et par les virgules (,)
+            const rawParts = rawText.split(/[\n,]+/);
+            
+            let validCodes = 0;
+            let totalPartsWithContent = 0;
             let duplicateFound = false;
             let currentBatchCodes = [];
 
-            lines.forEach(line => {
-                const cleanLine = line.trim();
-                if (cleanLine.length > 0) {
-                    totalLinesWithContent++;
-                    const normalizedCode = cleanLine.toUpperCase();
+            rawParts.forEach(part => {
+                const cleanPart = part.trim();
+                if (cleanPart.length > 0) {
+                    totalPartsWithContent++;
+                    const normalizedCode = cleanPart.toUpperCase();
                     const pureLength = normalizedCode.replace(/-/g, '').length;
 
                     if (pureLength === 16) {
                         if (usedCodes.has(normalizedCode) || currentBatchCodes.includes(normalizedCode)) {
                             duplicateFound = true;
                         } else {
-                            validLines++;
+                            validCodes++;
                             currentBatchCodes.push(normalizedCode);
                         }
                     }
@@ -432,8 +432,8 @@
                 validCodesCount = 0;
             } else {
                 errorMsg.style.display = 'none';
-                if (totalLinesWithContent > 0 && validLines === totalLinesWithContent && totalLinesWithContent <= 500) {
-                    validCodesCount = totalLinesWithContent;
+                if (totalPartsWithContent > 0 && validCodes === totalPartsWithContent && totalPartsWithContent <= 500) {
+                    validCodesCount = totalPartsWithContent;
                     lastValidatedCodes = currentBatchCodes;
                     activateBtn.classList.add('active');
                     activateBtn.removeAttribute('disabled');
@@ -445,7 +445,6 @@
             }
         });
 
-        // Clic sur Activer : affiche le montant calculé
         activateBtn.addEventListener('click', () => {
             if (activateBtn.classList.contains('active')) {
                 const totalAmount = validCodesCount * 10.00;
@@ -456,7 +455,6 @@
             }
         });
 
-        // Clic sur Ok : enregistre définitivement les codes, met à jour le solde, réinitialise et actualise les boutons
         closeModalBtn.addEventListener('click', () => {
             modalOverlay.style.display = 'none';
             
@@ -473,7 +471,6 @@
             updateDeductButtonsState();
         });
 
-        // État initial des boutons au chargement de la page
         updateDeductButtonsState();
     </script>
 </body>

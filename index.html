@@ -270,8 +270,8 @@
             </ul>
 
             <div class="promo-banner">
-                <!-- Fallback visuel géré en JS si l'image ne charge pas -->
-                <img id="bannerImg" src="banniere.png" alt="Bannière Roblox">
+                <!-- Image mise à jour vers roblox.png -->
+                <img id="bannerImg" src="roblox.png" alt="Bannière Roblox">
             </div>
         </div>
     </div>
@@ -295,13 +295,16 @@
 
         let currentBalance = 0.00;
 
-        // Gestion de l'affichage de secours si l'image "banniere.png" est introuvable
+        // Gestion de l'affichage de secours si l'image "roblox.png" ne charge toujours pas
         bannerImg.addEventListener('error', () => {
             bannerImg.style.display = 'none';
             bannerImg.parentElement.style.color = 'white';
-            bannerImg.parentElement.style.fontSize = '24px';
+            bannerImg.parentElement.style.fontSize = '20px';
             bannerImg.parentElement.style.fontWeight = 'bold';
-            bannerImg.parentElement.innerText = 'ROBLOX (Image introuvable)';
+            bannerImg.parentElement.style.display = 'flex';
+            bannerImg.parentElement.style.justifyContent = 'center';
+            bannerImg.parentElement.style.alignItems = 'center';
+            bannerImg.parentElement.innerText = 'roblox.png introuvable';
         });
 
         // Gestion de l'activation du bouton selon les 16 caractères
@@ -323,15 +326,13 @@
             }
         });
 
-        // Clic sur Ok : met à jour le solde, ferme la pop-up et réinitialise le champ
+        // Clic sur Ok : met à jour le solde (ajoute 10€), ferme la pop-up et réinitialise le champ
         closeModalBtn.addEventListener('click', () => {
             modalOverlay.style.display = 'none';
             
-            // Ajoute 10,00 € au crédit
             currentBalance += 10.00;
             balanceAmount.textContent = currentBalance.toFixed(2).replace('.', ',') + ' €';
 
-            // Réinitialisation du champ et du bouton
             codeInput.value = '';
             activateBtn.classList.remove('active');
             activateBtn.setAttribute('disabled', 'true');

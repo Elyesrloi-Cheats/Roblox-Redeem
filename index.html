@@ -13,6 +13,33 @@
             padding: 40px;
         }
 
+        .header-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            max-width: 1000px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .btn-deduct {
+            background-color: #ff4d4d;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn-deduct:hover {
+            background-color: #e03b3b;
+        }
+
         .container {
             max-width: 1000px;
             margin: 0 auto;
@@ -54,7 +81,6 @@
             margin-bottom: 16px;
         }
 
-        /* Transformé en textarea pour pouvoir sauter des lignes (jusqu'à 500 lignes) */
         textarea {
             width: 100%;
             height: 120px;
@@ -71,6 +97,15 @@
 
         textarea:focus {
             border-color: #0074e8;
+        }
+
+        .error-message {
+            color: #d93838;
+            font-size: 13px;
+            margin-top: -10px;
+            margin-bottom: 12px;
+            display: none;
+            font-weight: 500;
         }
 
         .btn-redeem {
@@ -226,6 +261,17 @@
 </head>
 <body>
 
+    <!-- Boutons de retrait en haut à droite -->
+    <div class="header-actions">
+        <button class="btn-deduct" onclick="deductBalance(239.99)">-239,99 €</button>
+        <button class="btn-deduct" onclick="deductBalance(119.99)">-119,99 €</button>
+        <button class="btn-deduct" onclick="deductBalance(59.99)">-59,99 €</button>
+        <button class="btn-deduct" onclick="deductBalance(39.99)">-39,99 €</button>
+        <button class="btn-deduct" onclick="deductBalance(23.99)">-23,99 €</button>
+        <button class="btn-deduct" onclick="deductBalance(11.99)">-11,99 €</button>
+        <button class="btn-deduct" onclick="deductBalance(5.99)">-5,99 €</button>
+    </div>
+
     <div class="container">
         <!-- Colonne de gauche -->
         <div class="left-column">
@@ -234,9 +280,9 @@
             
             <span class="label">Code</span>
             <div class="input-wrapper">
-                <!-- Utilisation d'un textarea pour permettre les sauts de ligne (jusqu'à 500 lignes) -->
                 <textarea id="codeInput" placeholder="Entrez un code par ligne..."></textarea>
             </div>
+            <div id="errorMsg" class="error-message"></div>
 
             <button id="activateBtn" class="btn-redeem" disabled>Activer</button>
 
@@ -283,9 +329,12 @@
         const balanceAmount = document.getElementById('balanceAmount');
         const bannerImg = document.getElementById('bannerImg');
         const modalText = document.getElementById('modalText');
+        const errorMsg = document.getElementById('errorMsg');
 
         let currentBalance = 0.00;
         let validCodesCount = 0;
+        let lastValidatedCodes = []; // Liste temporaire des codes en cours de validation
+        const usedCodes = new Set(); // Mémoire globale de tous les codes déjà utilisés
 
         // Gestion de l'affichage de secours si l'image "roblox.png" ne charge pas
         bannerImg.addEventListener('error', () => {
@@ -299,37 +348,64 @@
             bannerImg.parentElement.innerText = 'roblox.png introuvable';
         });
 
-        // Analyse des lignes écrites
+        // Fonction pour retirer de l'argent via les boutons du haut
+        function deductBalance(amount) {
+            currentBalance -= amount;
+            if (currentBalance < 0) {
+                currentBalance = 0.00;
+            }
+            balanceAmount.textContent = currentBalance.toFixed(2).replace('.', ',') + ' €';
+        }
+
+        // Analyse des lignes et vérification anti-doublon
         codeInput.addEventListener('input', () => {
             const lines = codeInput.value.split('\n');
             let validLines = 0;
             let totalLinesWithContent = 0;
+            let duplicateFound = false;
+            let currentBatchCodes = [];
 
             lines.forEach(line => {
                 const cleanLine = line.trim();
                 if (cleanLine.length > 0) {
                     totalLinesWithContent++;
-                    // Nettoie les tirets éventuels pour compter les caractères purs
-                    const pureLength = cleanLine.replace(/-/g, '').length;
+                    const normalizedCode = cleanLine.toUpperCase(); // Uniformise pour éviter les confusions maj/min
+                    const pureLength = normalizedCode.replace(/-/g, '').length;
+
                     if (pureLength === 16) {
-                        validLines++;
+                        // Vérifie si le code a déjà été utilisé ou s'il est en double dans la même saisie
+                        if (usedCodes.has(normalizedCode) || currentBatchCodes.includes(normalizedCode)) {
+                            duplicateFound = true;
+                        } else {
+                            validLines++;
+                            currentBatchCodes.push(normalizedCode);
+                        }
                     }
                 }
             });
 
-            // Le bouton s'active si toutes les lignes écrites ont exactement 16 caractères (et qu'il y a au moins 1 ligne, max 500)
-            if (totalLinesWithContent > 0 && validLines === totalLinesWithContent && totalLinesWithContent <= 500) {
-                validCodesCount = totalLinesWithContent;
-                activateBtn.classList.add('active');
-                activateBtn.removeAttribute('disabled');
-            } else {
-                validCodesCount = 0;
+            if (duplicateFound) {
+                errorMsg.textContent = "Erreur : Un ou plusieurs codes ont déjà été utilisés ou saisis en double.";
+                errorMsg.style.display = 'block';
                 activateBtn.classList.remove('active');
                 activateBtn.setAttribute('disabled', 'true');
+                validCodesCount = 0;
+            } else {
+                errorMsg.style.display = 'none';
+                if (totalLinesWithContent > 0 && validLines === totalLinesWithContent && totalLinesWithContent <= 500) {
+                    validCodesCount = totalLinesWithContent;
+                    lastValidatedCodes = currentBatchCodes;
+                    activateBtn.classList.add('active');
+                    activateBtn.removeAttribute('disabled');
+                } else {
+                    validCodesCount = 0;
+                    activateBtn.classList.remove('active');
+                    activateBtn.setAttribute('disabled', 'true');
+                }
             }
         });
 
-        // Clic sur Activer : calcule le montant total (10€ par ligne)
+        // Clic sur Activer : affiche le montant calculé
         activateBtn.addEventListener('click', () => {
             if (activateBtn.classList.contains('active')) {
                 const totalAmount = validCodesCount * 10.00;
@@ -340,10 +416,13 @@
             }
         });
 
-        // Clic sur Ok : met à jour le solde global
+        // Clic sur Ok : enregistre définitivement les codes comme utilisés, met à jour le solde et réinitialise
         closeModalBtn.addEventListener('click', () => {
             modalOverlay.style.display = 'none';
             
+            // Ajoute les codes validés à la mémoire des codes utilisés
+            lastValidatedCodes.forEach(code => usedCodes.add(code));
+
             currentBalance += (validCodesCount * 10.00);
             balanceAmount.textContent = currentBalance.toFixed(2).replace('.', ',') + ' €';
 

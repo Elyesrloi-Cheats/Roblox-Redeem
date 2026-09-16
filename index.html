@@ -45,7 +45,7 @@
         .btn-deduct:disabled {
             background-color: #ffb3b3;
             cursor: not-allowed;
-            opacity: 0.7;
+            opacity: 0.6;
         }
 
         .deduct-error {
@@ -280,15 +280,15 @@
     <!-- Boutons de retrait en haut à droite -->
     <div class="header-actions-wrapper">
         <div class="header-actions">
-            <button class="btn-deduct" onclick="deductBalance(239.99)">-239,99 €</button>
-            <button class="btn-deduct" onclick="deductBalance(119.99)">-119,99 €</button>
-            <button class="btn-deduct" onclick="deductBalance(59.99)">-59,99 €</button>
-            <button class="btn-deduct" onclick="deductBalance(39.99)">-39,99 €</button>
-            <button class="btn-deduct" onclick="deductBalance(23.99)">-23,99 €</button>
-            <button class="btn-deduct" onclick="deductBalance(11.99)">-11,99 €</button>
-            <button class="btn-deduct" onclick="deductBalance(5.99)">-5,99 €</button>
+            <button class="btn-deduct" data-amount="239.99" onclick="deductBalance(239.99)">-239,99 €</button>
+            <button class="btn-deduct" data-amount="119.99" onclick="deductBalance(119.99)">-119,99 €</button>
+            <button class="btn-deduct" data-amount="59.99" onclick="deductBalance(59.99)">-59,99 €</button>
+            <button class="btn-deduct" data-amount="39.99" onclick="deductBalance(39.99)">-39,99 €</button>
+            <button class="btn-deduct" data-amount="23.99" onclick="deductBalance(23.99)">-23,99 €</button>
+            <button class="btn-deduct" data-amount="11.99" onclick="deductBalance(11.99)">-11,99 €</button>
+            <button class="btn-deduct" data-amount="5.99" onclick="deductBalance(5.99)">-5,99 €</button>
         </div>
-        <div id="deductError" class="deduct-error">Crédit insuffisant : impossible de retirer si le solde est inférieur à 5,99 € ou si le montant dépasse le solde.</div>
+        <div id="deductError" class="deduct-error">Crédit insuffisant : impossible de retirer un montant supérieur à votre solde ou si celui-ci est inférieur à 5,99 €.</div>
     </div>
 
     <div class="container">
@@ -369,18 +369,21 @@
             bannerImg.parentElement.innerText = 'roblox.png introuvable';
         });
 
-        // Fonction pour mettre à jour l'état visuel des boutons de retrait
+        // Fonction pour bloquer dynamiquement les boutons selon le solde exact et le seuil de 5.99€
         function updateDeductButtonsState() {
-            if (currentBalance < 5.99) {
-                deductButtons.forEach(btn => btn.setAttribute('disabled', 'true'));
-            } else {
-                deductButtons.forEach(btn => btn.removeAttribute('disabled'));
-            }
+            deductButtons.forEach(btn => {
+                const amount = parseFloat(btn.getAttribute('data-amount'));
+                // Désactive si le solde est inférieur à 5.99 ou si le bouton coûte plus cher que le solde disponible
+                if (currentBalance < 5.99 || amount > currentBalance) {
+                    btn.setAttribute('disabled', 'true');
+                } else {
+                    btn.removeAttribute('disabled');
+                }
+            });
         }
 
         // Fonction pour retirer de l'argent via les boutons du haut
         function deductBalance(amount) {
-            // Sécurité supplémentaire : bloque si solde < 5.99 ou si le montant dépasse le solde
             if (currentBalance < 5.99 || amount > currentBalance) {
                 deductError.style.display = 'block';
                 return;
